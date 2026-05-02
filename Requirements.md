@@ -1,4 +1,0 @@
-numpy
-faiss-cpu
-sentence-transformers
-torch

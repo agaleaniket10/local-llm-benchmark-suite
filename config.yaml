@@ -1,0 +1,21 @@
+models:
+  - name: mistral
+    tag: mistral:latest
+  - name: llama3
+    tag: llama3.1:latest
+  - name: gemma2
+    tag: gemma2:latest
+
+benchmark:
+  prompt_file: data/prompts.json
+  results_file: data/results.csv
+  runs_per_prompt: 1       # number of times each prompt is run per model
+  timeout_seconds: 120     # max seconds to wait for a model response
+
+ollama:
+  host: http://localhost:11434
+
+analysis:
+  output_dir: analysis/output
+  latency_plot: analysis/output/latency.png
+  quality_plot: analysis/output/quality.png

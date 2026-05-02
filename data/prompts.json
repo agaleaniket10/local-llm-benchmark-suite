@@ -1,0 +1,27 @@
+[
+  {
+    "id": "reasoning_01",
+    "category": "reasoning",
+    "prompt": "If a train travels 60 miles per hour and needs to cover 150 miles, how long will the journey take? Show your reasoning step by step."
+  },
+  {
+    "id": "coding_01",
+    "category": "coding",
+    "prompt": "Write a Python function that checks whether a given string is a palindrome. Include edge cases and a brief explanation."
+  },
+  {
+    "id": "summarization_01",
+    "category": "summarization",
+    "prompt": "Summarize the key differences between supervised, unsupervised, and reinforcement learning in 3-4 sentences."
+  },
+  {
+    "id": "creative_01",
+    "category": "creative",
+    "prompt": "Write a short two-paragraph story about an AI that discovers it enjoys gardening."
+  },
+  {
+    "id": "factual_01",
+    "category": "factual",
+    "prompt": "What are the main components of a transformer neural network architecture? List and briefly describe each."
+  }
+]

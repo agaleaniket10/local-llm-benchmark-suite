@@ -1,0 +1,10 @@
+ollama
+pandas
+matplotlib
+numpy
+pyyaml
+tqdm
+requests
+sentence-transformers
+torch
+faiss-cpu

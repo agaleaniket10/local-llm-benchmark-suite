@@ -1,6 +1,35 @@
-.venv/
+# Python
 __pycache__/
 *.py[cod]
 *.pyo
-.env
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Data / results (large files)
+data/results.csv
+data/quality_scores.csv
+analysis/output/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Secrets / env
+.env
+*.env
