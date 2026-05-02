@@ -90,7 +90,7 @@ def hybrid_search(query):
 
 
 # =========================================================
-# METRICS (FAANG interview gold)
+# METRICS
 # =========================================================
 def recall_at_k(predicted, relevant, k=5):
     pred_k = predicted[:k]
@@ -105,7 +105,7 @@ def mrr(predicted, relevant):
 
 
 # =========================================================
-# COST ESTIMATOR (LLM thinking)
+# COST ESTIMATOR
 # =========================================================
 def estimate_cost(num_queries):
     # fake realistic approximation
