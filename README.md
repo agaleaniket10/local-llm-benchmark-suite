@@ -40,3 +40,49 @@ Run live queries in CLI or execute full evaluation benchmark.
 ---
 
 ## 🧱 Architecture
+## 🧱 Architecture
+
+```
+                ┌─────────────────────┐
+                │     User Query      │
+                └─────────┬───────────┘
+                          │
+                          ▼
+                ┌─────────────────────┐
+                │   Query Processor   │
+                └─────────┬───────────┘
+                          │
+        ┌─────────────────┴─────────────────┐
+        │                                   │
+        ▼                                   ▼
+
+┌───────────────────────┐       ┌──────────────────────────┐
+│ BM25 Keyword Search   │       │ Vector Search (FAISS)    │
+│ SQLite FTS5           │       │ SentenceTransformer      │
+│ - exact match         │       │ - embeddings             │
+└──────────┬────────────┘       └──────────┬──────────────┘
+           │                               │
+           └───────────────┬───────────────┘
+                           ▼
+                ┌─────────────────────┐
+                │   Result Merger     │
+                │ - deduplicate       │
+                │ - union results     │
+                └─────────┬───────────┘
+                          ▼
+                ┌─────────────────────┐
+                │  Neural Reranker    │
+                │  CrossEncoder       │
+                │  - relevance score  │
+                └─────────┬───────────┘
+                          ▼
+                ┌─────────────────────┐
+                │ Final Ranked Output │
+                └─────────┬───────────┘
+                          ▼
+                ┌─────────────────────┐
+                │ Top-K + Latency     │
+                └─────────────────────┘
+```
+
+---
