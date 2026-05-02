@@ -2,7 +2,7 @@
 
 A fully offline benchmarking system for comparing local language models using [Ollama](https://ollama.com). No cloud APIs, no data leaving your machine.
 
-Benchmarks **Mistral 7B**, **Llama 3.1 8B**, and **Gemma 2 9B** across reasoning, coding, summarization, creative writing, and factual recall — measuring latency, throughput, and response quality.
+Benchmarks **Mistral 7B**, **Llama 3.1 8B**, and **Gemma 2 9B** across reasoning, coding, summarization, creative writing, and factual recall for measuring latency, throughput, and response quality.
 
 ---
 
