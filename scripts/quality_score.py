@@ -2,7 +2,7 @@
 quality_score.py — Use an LLM as a judge to score benchmark responses.
 
 For each response in results.csv, a judge model scores it on 5 dimensions
-(accuracy, relevance, clarity, completeness, conciseness) from 1-5.
+(accuracy, relevance, clarity, completeness, conciseness) from 1–5.
 Scores are saved to data/quality_scores.csv.
 
 Usage:
@@ -14,12 +14,14 @@ import argparse
 import csv
 import json
 import re
-import time
 from pathlib import Path
 
 import pandas as pd
 import requests
-import yaml
+
+from scripts.utils import get_logger, load_config, load_prompts_as_dict, ensure_dir
+
+logger = get_logger(__name__)
 
 JUDGE_PROMPT = """You are an expert evaluator assessing the quality of AI model responses.
 
@@ -39,19 +41,12 @@ MODEL RESPONSE:
 Reply with ONLY a JSON object in this exact format, no explanation:
 {{"accuracy": <1-5>, "relevance": <1-5>, "clarity": <1-5>, "completeness": <1-5>, "conciseness": <1-5>}}"""
 
-
-def load_config(path: str) -> dict:
-    with open(path) as f:
-        return yaml.safe_load(f)
+SCORE_KEYS = ["accuracy", "relevance", "clarity", "completeness", "conciseness"]
 
 
-def load_prompts(path: str) -> dict:
-    """Return a dict of prompt_id -> prompt text."""
-    with open(path) as f:
-        return {p["id"]: p["prompt"] for p in json.load(f)}
-
-
-def call_judge(ollama_host: str, judge_model: str, prompt_text: str, response: str) -> dict | None:
+def call_judge(
+    ollama_host: str, judge_model: str, prompt_text: str, response: str
+) -> dict | None:
     """Ask the judge model to score a response. Returns score dict or None on failure."""
     judge_input = JUDGE_PROMPT.format(prompt=prompt_text, response=response)
     try:
@@ -60,25 +55,30 @@ def call_judge(ollama_host: str, judge_model: str, prompt_text: str, response: s
             json={"model": judge_model, "prompt": judge_input, "stream": False},
             timeout=120,
         )
+        resp.raise_for_status()
         raw = resp.json().get("response", "")
 
-        # Extract JSON from the response (handle extra text around it)
         match = re.search(r"\{[^{}]+\}", raw)
         if not match:
-            print(f"  ⚠️  Could not parse JSON from judge response: {raw[:100]}")
+            logger.warning("Could not parse JSON from judge response: %.100s", raw)
             return None
 
         scores = json.loads(match.group())
-        # Validate all keys present and values in range
-        keys = ["accuracy", "relevance", "clarity", "completeness", "conciseness"]
-        for k in keys:
-            if k not in scores or not (1 <= int(scores[k]) <= 5):
-                print(f"  ⚠️  Invalid score for '{k}': {scores.get(k)}")
+        for k in SCORE_KEYS:
+            if k not in scores:
+                logger.warning("Missing key '%s' in judge response", k)
                 return None
-        return {k: int(scores[k]) for k in keys}
+            if not (1 <= int(scores[k]) <= 5):
+                logger.warning("Score out of range for '%s': %s", k, scores[k])
+                return None
 
+        return {k: int(scores[k]) for k in SCORE_KEYS}
+
+    except requests.exceptions.Timeout:
+        logger.error("Judge call timed out")
+        return None
     except Exception as e:
-        print(f"  ⚠️  Judge call failed: {e}")
+        logger.error("Judge call failed: %s", e)
         return None
 
 
@@ -86,69 +86,74 @@ def main(config_path: str, judge_model: str) -> None:
     config = load_config(config_path)
     ollama_host = config["ollama"]["host"]
     results_file = config["benchmark"]["results_file"]
-    prompts = load_prompts(config["benchmark"]["prompt_file"])
+    prompts = load_prompts_as_dict(config["benchmark"]["prompt_file"])
     output_file = "data/quality_scores.csv"
 
-    df = pd.read_csv(results_file)
-    # Only score rows that have actual responses
-    df = df[df["response"].notna() & (df["response"].str.strip() != "")]
-
-    if df.empty:
-        print("⚠️  No responses found in results.csv. Run run_benchmark.py first.")
+    try:
+        df = pd.read_csv(results_file)
+    except FileNotFoundError:
+        logger.error(
+            "Results file not found: %s — run run_benchmark.py first.", results_file
+        )
         return
 
-    print(f"🧑‍⚖️  Judge model: {judge_model}")
-    print(f"📋 Scoring {len(df)} responses...\n")
+    df = df[df["response"].notna() & (df["response"].str.strip() != "")]
+    if df.empty:
+        logger.warning("No responses found in results.csv.")
+        return
 
-    fieldnames = [
-        "run_id", "model", "prompt_id", "category",
-        "accuracy", "relevance", "clarity", "completeness", "conciseness", "total",
-    ]
+    logger.info("Judge model: %s", judge_model)
+    logger.info("Scoring %d responses...", len(df))
 
-    Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+    ensure_dir(str(Path(output_file).parent))
+    fieldnames = ["run_id", "model", "prompt_id", "category"] + SCORE_KEYS + ["total"]
 
+    scored, skipped = 0, 0
     with open(output_file, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
 
         for _, row in df.iterrows():
             prompt_text = prompts.get(row["prompt_id"], "")
-            print(f"  Scoring {row['model']:10s} / {row['prompt_id']} ...", end=" ", flush=True)
+            logger.info("Scoring %-10s / %s", row["model"], row["prompt_id"])
 
             scores = call_judge(ollama_host, judge_model, prompt_text, row["response"])
             if scores:
                 total = sum(scores.values())
-                writer.writerow({
-                    "run_id": row["run_id"],
-                    "model": row["model"],
-                    "prompt_id": row["prompt_id"],
-                    "category": row["category"],
-                    **scores,
-                    "total": total,
-                })
-                print(f"✅ total={total}/25  {scores}")
+                writer.writerow(
+                    {
+                        "run_id": row["run_id"],
+                        "model": row["model"],
+                        "prompt_id": row["prompt_id"],
+                        "category": row["category"],
+                        **scores,
+                        "total": total,
+                    }
+                )
+                logger.info("  → total=%d/25  %s", total, scores)
+                scored += 1
             else:
-                print("❌ skipped")
+                skipped += 1
 
-    # Print summary
+    logger.info("Done: %d scored, %d skipped", scored, skipped)
+
     scores_df = pd.read_csv(output_file)
     if scores_df.empty:
-        print("\n⚠️  No scores were recorded.")
+        logger.warning("No scores were recorded.")
         return
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("📊 QUALITY SCORE SUMMARY (avg total out of 25)")
-    print("="*60)
+    print("=" * 60)
     summary = scores_df.groupby("model")["total"].mean().sort_values(ascending=False)
     for model, avg in summary.items():
         bar = "█" * int(avg)
         print(f"  {model:12s}  {avg:5.2f}  {bar}")
 
     print("\n📊 BY CATEGORY")
-    print("-"*60)
+    print("-" * 60)
     cat_summary = scores_df.groupby(["model", "category"])["total"].mean().unstack()
     print(cat_summary.round(1).to_string())
-
     print(f"\n✅ Full scores saved to {output_file}")
 
 

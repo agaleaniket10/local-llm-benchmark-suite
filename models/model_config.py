@@ -18,21 +18,21 @@ class ModelConfig:
 MODELS: list[ModelConfig] = [
     ModelConfig(
         name="mistral",
-        tag="mistral:7b-instruct",
+        tag="mistral:latest",
         parameters="7B",
         context_length=8192,
         notes="Strong general-purpose instruct model from Mistral AI.",
     ),
     ModelConfig(
         name="llama3",
-        tag="llama3.1:8b-instruct",
+        tag="llama3.1:latest",
         parameters="8B",
         context_length=128000,
         notes="Meta's Llama 3.1 with a very large context window.",
     ),
     ModelConfig(
         name="gemma2",
-        tag="gemma2:9b",
+        tag="gemma2:latest",
         parameters="9B",
         context_length=8192,
         notes="Google's Gemma 2 — competitive quality at 9B scale.",

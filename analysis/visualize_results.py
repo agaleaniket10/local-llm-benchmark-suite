@@ -1,31 +1,24 @@
 """
 visualize_results.py — Generate all analysis plots from benchmark results.
 
-Usage:
-    python analysis/visualize_results.py
-    python analysis/visualize_results.py --config config.yaml
+Usage (run from project root):
+    python -m analysis.visualize_results
+    python -m analysis.visualize_results --config config.yaml
 """
 
 import argparse
-import sys
 from pathlib import Path
 
-# Allow imports from project root
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 import pandas as pd
-import yaml
 
 from analysis.latency_plots import (
     plot_latency_by_model,
     plot_latency_by_category,
     plot_tokens_per_second,
 )
+from scripts.utils import get_logger, load_config, ensure_dir
 
-
-def load_config(path: str) -> dict:
-    with open(path) as f:
-        return yaml.safe_load(f)
+logger = get_logger(__name__)
 
 
 def main(config_path: str) -> None:
@@ -33,18 +26,25 @@ def main(config_path: str) -> None:
     results_file = config["benchmark"]["results_file"]
     output_dir = config["analysis"]["output_dir"]
 
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    ensure_dir(output_dir)
 
-    df = pd.read_csv(results_file)
-    if df.empty:
-        print("⚠️  No results found. Run run_benchmark.py first.")
+    try:
+        df = pd.read_csv(results_file)
+    except FileNotFoundError:
+        logger.error(
+            "Results file not found: %s — run run_benchmark.py first.", results_file
+        )
         return
 
-    print("📈 Generating plots...")
+    if df.empty:
+        logger.warning("Results file is empty.")
+        return
+
+    logger.info("Generating plots from %d rows...", len(df))
     plot_latency_by_model(df, output_dir)
     plot_latency_by_category(df, output_dir)
     plot_tokens_per_second(df, output_dir)
-    print(f"✅ Plots saved to {output_dir}/")
+    logger.info("All plots saved to %s/", output_dir)
 
 
 if __name__ == "__main__":

@@ -1,16 +1,10 @@
 """
 app.py — Optional Streamlit dashboard for exploring benchmark results.
 
-Usage:
+Usage (run from project root):
     pip install streamlit
     streamlit run dashboard/app.py
 """
-
-import sys
-from pathlib import Path
-
-# Allow imports from project root
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import pandas as pd
 import streamlit as st
