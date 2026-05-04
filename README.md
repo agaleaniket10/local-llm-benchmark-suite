@@ -1,5 +1,7 @@
 # 🧠 Local LLM Benchmark Suite
 
+[![CI](https://github.com/agaleaniket10/local-llm-benchmark-suite/actions/workflows/ci.yml/badge.svg)](https://github.com/agaleaniket10/local-llm-benchmark-suite/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/) [![Ollama](https://img.shields.io/badge/Ollama-local%20inference-black.svg)](https://ollama.com)
+
 A fully offline benchmarking system for comparing local language models using [Ollama](https://ollama.com). No cloud APIs, no data leaving your machine.
 
 Benchmarks **Mistral 7B**, **Llama 3.1 8B**, and **Gemma 2 9B** across reasoning, coding, summarization, creative writing, and factual recall for measuring latency, throughput, and response quality.
