@@ -9,7 +9,14 @@ models:
 benchmark:
   prompt_file: data/prompts.json
   results_file: data/results.csv
-  runs_per_prompt: 1       # number of times each prompt is run per model
+  # runs_per_prompt: How many times each prompt is sent to each model.
+  # Set to 1 for a quick smoke-test run.
+  # For statistically meaningful results, use at least 3 runs per prompt.
+  # Inference latency varies due to thermal throttling, memory pressure, and
+  # token sampling randomness — a single run can be an outlier. With 3+ runs
+  # you can compute a stable mean and p95, and detect variance across models.
+  # Recommended for publication-quality benchmarks: 5 runs per prompt.
+  runs_per_prompt: 3
   timeout_seconds: 120     # max seconds to wait for a model response
 
 ollama:

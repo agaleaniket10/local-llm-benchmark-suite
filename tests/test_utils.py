@@ -1,7 +1,6 @@
 """Tests for scripts/utils.py"""
 
 import json
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -120,6 +119,6 @@ def test_get_logger_returns_logger():
 
 
 def test_get_logger_no_duplicate_handlers():
-    log1 = get_logger("same.name")
+    get_logger("same.name")
     log2 = get_logger("same.name")
     assert len(log2.handlers) == 1  # should not double-add handlers

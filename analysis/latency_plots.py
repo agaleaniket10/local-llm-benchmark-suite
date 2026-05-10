@@ -56,7 +56,7 @@ def plot_tokens_per_second(df: pd.DataFrame, output_dir: str) -> None:
     data = [df[df["model"] == m]["tokens_per_second"].dropna().values for m in models]
 
     fig, ax = plt.subplots(figsize=(8, 5))
-    ax.boxplot(data, labels=models, patch_artist=True)
+    ax.boxplot(data, tick_labels=models, patch_artist=True)
     ax.set_title(
         "Tokens per Second Distribution by Model", fontsize=14, fontweight="bold"
     )

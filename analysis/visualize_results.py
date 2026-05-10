@@ -7,7 +7,6 @@ Usage (run from project root):
 """
 
 import argparse
-from pathlib import Path
 
 import pandas as pd
 

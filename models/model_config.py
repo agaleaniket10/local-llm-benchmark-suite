@@ -2,7 +2,7 @@
 model_config.py — Model metadata and helper utilities.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass

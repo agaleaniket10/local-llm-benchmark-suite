@@ -3,8 +3,6 @@
 import json
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from scripts.quality_score import call_judge, SCORE_KEYS
 
 
