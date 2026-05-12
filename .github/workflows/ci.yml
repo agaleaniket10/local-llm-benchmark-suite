@@ -43,6 +43,13 @@ jobs:
             --cov-report=term-missing \
             --cov-fail-under=70
 
+  secrets-scan:
+    name: Secrets scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Check for secrets (gitleaks)
         uses: gitleaks/gitleaks-action@v2
         env:
